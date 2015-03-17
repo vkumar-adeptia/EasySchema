@@ -30,6 +30,8 @@ package org.ow2.easywsdl.schema.api.abstractElmt;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -37,7 +39,6 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 
 import org.ow2.easywsdl.schema.SchemaFactory;
-import org.ow2.easywsdl.schema.api.Redefine;
 import org.ow2.easywsdl.schema.api.SchemaException;
 import org.ow2.easywsdl.schema.api.SchemaReader.FeatureConstants;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfAttribute;
@@ -50,6 +51,8 @@ import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfType;
 import org.ow2.easywsdl.schema.api.extensions.NamespaceMapperImpl;
 import org.ow2.easywsdl.schema.api.extensions.SchemaLocatorImpl;
+import org.ow2.easywsdl.schema.impl.SchemaImpl;
+import org.ow2.easywsdl.wsdl.api.WSDLException;
 
 /**
  * @author Nicolas Salatge - eBM WebSourcing
@@ -62,7 +65,6 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 	private static final long serialVersionUID = 1L;
 
 	private static final Logger LOG = Logger.getLogger(AbstractSchemaImpl.class.getName());
-
 	/**
 	 * Features
 	 */
@@ -72,7 +74,7 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 	 * the namespace context
 	 */
 	private NamespaceMapperImpl namespaceMapper = new org.ow2.easywsdl.schema.api.extensions.NamespaceMapperImpl();
-
+	 private HashSet<String> rootNamespaces = new HashSet();
 	/**
 	 * list of imports
 	 */
@@ -102,7 +104,14 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 	 * the list of attributes
 	 */
 	private List<A> attributes = new ArrayList<A>();
-
+	/**
+	 * the list of attributes groups
+	 */
+	private List attributeGroups = new ArrayList();
+	/**
+	 * the list of groups
+	 */
+	private List namedGroups = new ArrayList();
 	/**
 	 * the baseUri string
 	 */
@@ -120,20 +129,33 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 	 * @param parent
 	 * @param doc
 	 */
-	public AbstractSchemaImpl(URI documentURI, final E schema, final NamespaceMapperImpl namespaceMapper, final SchemaLocatorImpl schemaLocator) {
-		super(schema, null);
-		this.namespaceMapper = namespaceMapper;
-		this.documentURI = documentURI;
-	}
+	public AbstractSchemaImpl(URI documentURI, E schema, NamespaceMapperImpl namespaceMapper, SchemaLocatorImpl schemaLocator)
+	  {
+	    super(schema, null);
+	    this.namespaceMapper = namespaceMapper;
+	    convertHashMapToHashSet(namespaceMapper);
+	    this.documentURI = documentURI;
+	  }
+	  public void convertHashMapToHashSet(NamespaceMapperImpl namespaceMapper) {
+	    Map map = namespaceMapper.ns;
+	    Iterator iterator = map.keySet().iterator();
+	    Object obj = null;
+	    while (iterator.hasNext()) {
+	      obj = iterator.next();
+	      if ((obj != null) && (map.get(obj) != null) && 
+	        (!this.rootNamespaces.contains(obj.toString() + "#####" + map.get(obj).toString())))
+	        this.rootNamespaces.add(obj.toString() + "#####" + map.get(obj).toString());
+	    }
+	  }
 
-	public AbstractSchemaImpl(final String baseURIString) {
-		this.documentBaseURIString = baseURIString;
-	}
-
+	  public AbstractSchemaImpl(String baseURIString) {
+	    this.documentBaseURIString = baseURIString;
+	  }
 	public void addImportElementsInAllList() {
-		for (final Impt impt : this.imports) {
+		for (final Impt impt : this.imports) {					
 			if (impt.getSchema() != null) {
 				this.types.addAll(impt.getSchema().getTypes());
+				  this.rootNamespaces.addAll(((SchemaImpl)impt.getSchema()).getRootNamespaces());
 				this.elements.addAll(impt.getSchema().getElements());
 				this.attributes.addAll(impt.getSchema().getAttributes());
 			}
@@ -144,6 +166,7 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 		for (final Incl incl : this.includes) {
 			if (incl.getSchema() != null) {
 				this.types.addAll(incl.getSchema().getTypes());
+				this.rootNamespaces.addAll(((SchemaImpl)incl.getSchema()).getRootNamespaces());
 				this.elements.addAll(incl.getSchema().getElements());
 				this.attributes.addAll(incl.getSchema().getAttributes());
 			}
@@ -153,6 +176,7 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 	public void addIncludeElementsInAllList(AbsItfInclude incl) {
 		if (incl.getSchema() != null) {
 			this.types.addAll(incl.getSchema().getTypes());
+			this.rootNamespaces.addAll(((SchemaImpl)incl.getSchema()).getRootNamespaces());
 			this.elements.addAll(incl.getSchema().getElements());
 			this.attributes.addAll(incl.getSchema().getAttributes());
 		}
@@ -162,6 +186,7 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 		for (final Red red : this.redefines) {
 			if (red.getSchema() != null) {
 				this.types.addAll(red.getSchema().getTypes());
+				 this.rootNamespaces.addAll(((SchemaImpl)red.getSchema()).getRootNamespaces());
 				this.elements.addAll(red.getSchema().getElements());
 				this.attributes.addAll(red.getSchema().getAttributes());
 			}
@@ -326,6 +351,34 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 	}
 
 	/*
+	 * Attributes group methods
+	 */
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.ow2.easywsdl.schema.api.Schema#getAttributeGroups()
+	 */
+	public List getAttributeGroups() {
+		if (this.attributeGroups == null) {
+			this.attributeGroups = new ArrayList<A>();
+		}
+		return this.attributeGroups;
+	}
+	/*
+	 *  group methods
+	 */
+
+	/*
+	 * (non-Javadoc)
+	 * @see org.ow2.easywsdl.schema.api.Schema#getNamedGroups()
+	 */
+	public List getNamedGroups() {
+		if (this.namedGroups == null) {
+			this.namedGroups = new ArrayList<A>();
+		}
+		return this.namedGroups;
+	}
+	/*
 	 * (non-Javadoc)
 	 * @see org.ow2.easywsdl.schema.api.Schema#getAttribute(javax.xml.namespace .QName)
 	 */
@@ -430,6 +483,22 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 				}
 			}
 		}
+		
+		if(ct.getChoice() != null) {
+			for(El elmtItem: (List<El>)ct.getChoice().getElements()) {
+				if(elmtItem.getQName().equals(element)) {
+					res.add(elmtItem);
+				}
+			}
+		}
+		
+		if(ct.getComplexContent() != null && ct.getComplexContent().getExtension()!=null && ct.getComplexContent().getExtension().getSequence() != null) {
+			for(El elmtItem: (List<El>)ct.getComplexContent().getExtension().getSequence().getElements()) {
+				if(elmtItem.getQName().equals(element)) {
+					res.add(elmtItem);
+				}
+			}
+		}
 	}
 
 	/*
@@ -454,6 +523,9 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 	public NamespaceMapperImpl getAllNamespaces() {
 		return this.namespaceMapper;
 	}
+	public HashSet getRootNamespaces() {
+	    return this.rootNamespaces;
+	  }
 
 	/**
 	 * @return the features
