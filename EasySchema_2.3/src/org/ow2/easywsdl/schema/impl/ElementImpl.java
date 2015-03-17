@@ -81,6 +81,8 @@ implements Element {
 			if (this.type == null && SchemaFactory.getDefaultSchema() != null) {
 				this.type = (Type) SchemaFactory.getDefaultSchema().getType(this.model.getType());
 			}
+			if(this.type == null)
+				this.type = (Type) this.parent.getSchema().getType(new QName(this.getSchema().getTargetNamespace(),this.model.getType().getLocalPart()));
 		}
 	}
 
