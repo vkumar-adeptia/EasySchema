@@ -27,6 +27,8 @@
  */
 package org.ow2.easywsdl.schema.impl;
 
+import java.util.List;
+
 import javax.xml.bind.JAXBElement;
 
 import org.ow2.easywsdl.schema.api.Element;
@@ -35,6 +37,7 @@ import org.ow2.easywsdl.schema.api.abstractElmt.AbstractElementImpl;
 import org.ow2.easywsdl.schema.api.abstractElmt.AbstractSchemaElementImpl;
 import org.ow2.easywsdl.schema.api.abstractElmt.AbstractSequenceImpl;
 import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.ExplicitGroup;
+import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Group;
 import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.LocalElement;
 import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.ObjectFactory;
 
@@ -56,10 +59,14 @@ public class SequenceImpl extends AbstractSequenceImpl<ExplicitGroup, Element> i
 			if (item instanceof JAXBElement) {
 				if (((JAXBElement) item).getValue() instanceof org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Element) {
 					this.elements
-							.add(new ElementImpl(
-									(org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Element) ((JAXBElement) item)
-											.getValue(), this));
+					.add(new ElementImpl(
+							(org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Element) ((JAXBElement) item)
+							.getValue(), this));
 
+				}
+
+				if(((JAXBElement) item).getValue() instanceof Group){
+					addGroupElements(((Group)((JAXBElement) item).getValue()));
 				}
 			}
 			// TODO: finish to analyze
@@ -67,6 +74,21 @@ public class SequenceImpl extends AbstractSequenceImpl<ExplicitGroup, Element> i
 
 	}
 
+	public void addGroupElements(Group group){
+		List particleElementList = group.getParticle();
+		for(int particleElementIndex=0; particleElementIndex < particleElementList.size(); particleElementIndex++){
+			try
+			{
+				if(((javax.xml.bind.JAXBElement)particleElementList.get(particleElementIndex)).getValue() instanceof LocalElement)
+					this.elements.add(new  ElementImpl((LocalElement)((javax.xml.bind.JAXBElement)particleElementList.get(particleElementIndex)).getValue(), this));
+				else if(((javax.xml.bind.JAXBElement)particleElementList.get(particleElementIndex)).getValue() instanceof Group)
+					addGroupElements(((Group)((javax.xml.bind.JAXBElement)particleElementList.get(particleElementIndex)).getValue()));
+			}
+			catch (Exception e) {
+				continue;
+			}
+		}
+	}
 	public Element createElement() {
 		return new ElementImpl(new LocalElement(), this);
 	}
