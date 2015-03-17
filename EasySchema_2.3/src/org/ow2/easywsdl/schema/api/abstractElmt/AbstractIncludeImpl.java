@@ -37,6 +37,8 @@ import org.ow2.easywsdl.schema.api.SchemaException;
 import org.ow2.easywsdl.schema.api.SchemaReader.FeatureConstants;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfInclude;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
+import org.ow2.easywsdl.schema.impl.IncludeImpl;
+import org.ow2.easywsdl.schema.impl.SchemaImpl;
 
 /**
  * @author Nicolas Salatge - eBM WebSourcing
@@ -111,6 +113,8 @@ public abstract class AbstractIncludeImpl<E, S extends AbsItfSchema> extends Abs
 			if (!imports.containsKey(schemaLocation)) {
 				S externalSchema = (S) reader.readExternalPart(schemaLocation, baseURI, imports);
 				imports.put(schemaLocation, externalSchema);
+				if(this instanceof IncludeImpl)
+					((SchemaImpl)externalSchema).setTargetNamespace(((SchemaImpl)this.getParent()).getTargetNamespace());
 				((AbstractSchemaImpl) externalSchema).initialize();
 			}
 			this.schema = (S) imports.get(schemaLocation);
@@ -151,7 +155,6 @@ public abstract class AbstractIncludeImpl<E, S extends AbsItfSchema> extends Abs
 				((AbstractSchemaImpl) this.schema).setFeatures(features);
 			}
 		}
-		
 		return this.schema;
 	}
 
