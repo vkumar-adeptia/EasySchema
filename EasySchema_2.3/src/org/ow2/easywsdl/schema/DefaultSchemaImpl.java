@@ -121,6 +121,8 @@ public final class DefaultSchemaImpl implements DefaultSchema {
 	public Type getType(QName type) {
 		Type res = null;
 		for(Type t: this.getTypes()) {
+			if(t.getQName()==null)
+				continue;
 			if((t.getQName().getNamespaceURI().equals(type.getNamespaceURI()))
 					&&(t.getQName().getLocalPart().equals(type.getLocalPart()))) {
 				res = t;
