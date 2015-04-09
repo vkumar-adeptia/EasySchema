@@ -32,6 +32,6 @@ import org.ow2.easywsdl.schema.api.absItf.AbsItfComplexContent;
 /**
  * @author Nicolas Salatge - eBM WebSourcing
  */
-public interface ComplexContent extends AbsItfComplexContent<Extension> {
+public interface ComplexContent extends AbsItfComplexContent<Extension,Restriction> {
 
 }
