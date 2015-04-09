@@ -29,14 +29,15 @@ package org.ow2.easywsdl.schema.api.abstractElmt;
 
 import org.ow2.easywsdl.schema.api.absItf.AbsItfComplexContent;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfExtension;
+import org.ow2.easywsdl.schema.api.absItf.AbsItfRestriction;
 import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Annotated;
 
 /**
  * @author Nicolas Salatge - eBM WebSourcing
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractComplexContentImpl<E extends Annotated, Ex extends AbsItfExtension>
-          extends AbstractSchemaElementImpl<E> implements AbsItfComplexContent<Ex> {
+public abstract class AbstractComplexContentImpl<E extends Annotated, Ex extends AbsItfExtension, R extends AbsItfRestriction>
+          extends AbstractSchemaElementImpl<E> implements AbsItfComplexContent<Ex,R> {
 
     /**
 	 *
@@ -44,6 +45,8 @@ public abstract class AbstractComplexContentImpl<E extends Annotated, Ex extends
     private static final long serialVersionUID = 1L;
 
     protected Ex extension;
+    
+    protected R restriction;
 
     public AbstractComplexContentImpl(final E model, final AbstractSchemaElementImpl parent) {
         super(model, parent);
@@ -56,5 +59,19 @@ public abstract class AbstractComplexContentImpl<E extends Annotated, Ex extends
     public void setExtension(Ex extension) {
     	this.extension = extension;
     }
+
+	/**
+	 * @return the restriction
+	 */
+	public R getRestriction() {
+		return restriction;
+	}
+
+	/**
+	 * @param restriction the restriction to set
+	 */
+	public void setRestriction(R restriction) {
+		this.restriction = restriction;
+	}
 
 }

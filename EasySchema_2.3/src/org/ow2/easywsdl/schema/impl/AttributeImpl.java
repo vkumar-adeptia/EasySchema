@@ -63,6 +63,8 @@ public class AttributeImpl extends
             for (final Object obj : parent.getSchema().getTypes()) {
                 if (obj instanceof AbsItfType) {
                     final AbsItfType t = (AbsItfType) obj;
+                    if(t.getQName()==null)
+                    	continue;
                     if (t.getQName().equals(this.model.getType())) {
                         this.type = (Type) t;
                         break;
@@ -75,6 +77,8 @@ public class AttributeImpl extends
                 if (SchemaFactory.getDefaultSchema().getTypes() != null) {
                     for (final Object obj : SchemaFactory.getDefaultSchema().getTypes()) {
                         final AbsItfType t = (AbsItfType) obj;
+                        if(t.getQName()== null)
+                        	continue;
                         if (t.getQName().equals(this.model.getType())) {
                             this.type = (Type) t;
                             break;

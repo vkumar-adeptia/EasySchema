@@ -30,6 +30,7 @@ package org.ow2.easywsdl.schema.api.abstractElmt;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.ow2.easywsdl.schema.api.Element;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfEnumeration;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfRestriction;
 
@@ -37,7 +38,7 @@ import org.ow2.easywsdl.schema.api.absItf.AbsItfRestriction;
  * @author Nicolas Boissel-Dallier - eBM WebSourcing
  */
 @SuppressWarnings("unchecked")
-public abstract class AbstractRestrictionImpl<E, En extends AbsItfEnumeration>
+public abstract class AbstractRestrictionImpl<E,En extends AbsItfEnumeration>
         extends AbstractSchemaElementImpl<E> implements AbsItfRestriction<En> {
 
     /**
@@ -47,12 +48,13 @@ public abstract class AbstractRestrictionImpl<E, En extends AbsItfEnumeration>
 
 
     protected List<En> enums = new ArrayList<En>();
+    
+    protected List<Element> elements = new ArrayList<Element>();
 
 
     public AbstractRestrictionImpl(final E model, AbstractSchemaElementImpl parent) {
         super(model, parent);
     }
-
 
 	public List<En> getEnumerations() {
 		return this.enums;
@@ -60,6 +62,21 @@ public abstract class AbstractRestrictionImpl<E, En extends AbsItfEnumeration>
 
 	public void addEnumeration(En enumeration) {
 		this.enums.add(enumeration);
+	}
+
+	/**
+	 * @return
+	 */
+	public List<Element> getElements() {
+		return elements;
+	}
+
+	
+	/**
+	 * @param element
+	 */
+	public void addElement(Element element) {
+		this.elements.add(element);
 	}
 
 }

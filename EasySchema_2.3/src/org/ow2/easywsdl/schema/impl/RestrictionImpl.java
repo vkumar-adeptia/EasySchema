@@ -27,6 +27,8 @@
  */
 package org.ow2.easywsdl.schema.impl;
 
+import java.util.List;
+
 import javax.xml.bind.JAXBElement;
 import javax.xml.namespace.QName;
 
@@ -35,8 +37,11 @@ import org.ow2.easywsdl.schema.api.Restriction;
 import org.ow2.easywsdl.schema.api.abstractElmt.AbstractEnumerationImpl;
 import org.ow2.easywsdl.schema.api.abstractElmt.AbstractRestrictionImpl;
 import org.ow2.easywsdl.schema.api.abstractElmt.AbstractSchemaElementImpl;
+import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Group;
+import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.LocalElement;
 import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.NoFixedFacet;
 import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.ObjectFactory;
+import org.ow2.easywsdl.schema.org.w3._2001.xmlschema.RestrictionType;
 
 /**
  * @author Nicolas Boissel-Dallier - eBM WebSourcing
@@ -50,8 +55,45 @@ public class RestrictionImpl
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public RestrictionImpl(org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Restriction model, AbstractSchemaElementImpl parent) {
+	public RestrictionImpl(org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Restriction model, RestrictionType restrictionType, AbstractSchemaElementImpl parent) {
 		super(model, parent);
+
+		if(restrictionType!=null){
+			if(restrictionType.getSequence()!=null){
+				addGroupElements(restrictionType.getSequence());
+			}
+		}else{
+			// get elements
+			for (Object item : this.model.getFacets()) {
+				if (item instanceof JAXBElement) {
+					// Enumeration management
+					if (((JAXBElement) item).getValue() instanceof NoFixedFacet && ((JAXBElement) item).getName().equals(
+							new QName("http://www.w3.org/2001/XMLSchema", "enumeration"))) {
+						this.enums.add(new EnumerationImpl((NoFixedFacet)((JAXBElement) item).getValue(), this));
+					}
+					// TODO: finish to parse (Pattern, Length...)
+				}
+			}
+		}
+	}
+	public void addGroupElements(Group group){
+		List particleElementList = group.getParticle();
+		for(int particleElementIndex=0; particleElementIndex < particleElementList.size(); particleElementIndex++){
+			try
+			{
+				if(((javax.xml.bind.JAXBElement)particleElementList.get(particleElementIndex)).getValue() instanceof LocalElement)
+					this.elements.add(new  ElementImpl((LocalElement)((javax.xml.bind.JAXBElement)particleElementList.get(particleElementIndex)).getValue(), this));
+				else if(((javax.xml.bind.JAXBElement)particleElementList.get(particleElementIndex)).getValue() instanceof Group)
+					addGroupElements(((Group)((javax.xml.bind.JAXBElement)particleElementList.get(particleElementIndex)).getValue()));
+			}
+			catch (Exception e) {
+				continue;
+			}
+		}
+	}
+	
+	public RestrictionImpl(org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Restriction model, AbstractSchemaElementImpl parent) {
+		super(model,parent);
 
 		// get elements
 		for (Object item : this.model.getFacets()) {
@@ -65,6 +107,7 @@ public class RestrictionImpl
 			}
 		}
 	}
+	
 
 	public Enumeration createEnumeration() {
 		return new EnumerationImpl(new NoFixedFacet(), this);

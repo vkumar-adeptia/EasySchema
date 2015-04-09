@@ -64,7 +64,6 @@ implements Element {
 			final org.ow2.easywsdl.schema.org.w3._2001.xmlschema.Element model,
 			final AbstractSchemaElementImpl parent) {
 		super(model, parent);
-
 		findType();
 
 		//findReferencedElementIfExist();
@@ -73,7 +72,8 @@ implements Element {
 	private void findType() {
 		// if anonymous element
 		if (this.model.getComplexType() != null) {
-			this.type = new ComplexTypeImpl(this.model.getComplexType(), parent);
+			this.type = new ComplexTypeImpl(this.model.getComplexType(), parent,this);
+			this.parent.getSchema().getTypes().add(type);
 		} else if (this.model.getSimpleType() != null) {
 			this.type = new SimpleTypeImpl(this.model.getSimpleType(), parent);
 		} else if (this.model.getType() != null) {

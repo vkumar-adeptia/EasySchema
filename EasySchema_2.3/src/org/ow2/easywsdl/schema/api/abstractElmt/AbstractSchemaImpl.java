@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 
 import org.ow2.easywsdl.schema.SchemaFactory;
+import org.ow2.easywsdl.schema.api.Element;
 import org.ow2.easywsdl.schema.api.SchemaException;
 import org.ow2.easywsdl.schema.api.SchemaReader.FeatureConstants;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfAttribute;
@@ -51,6 +52,7 @@ import org.ow2.easywsdl.schema.api.absItf.AbsItfSchema;
 import org.ow2.easywsdl.schema.api.absItf.AbsItfType;
 import org.ow2.easywsdl.schema.api.extensions.NamespaceMapperImpl;
 import org.ow2.easywsdl.schema.api.extensions.SchemaLocatorImpl;
+import org.ow2.easywsdl.schema.impl.RestrictionImpl;
 import org.ow2.easywsdl.schema.impl.SchemaImpl;
 import org.ow2.easywsdl.wsdl.api.WSDLException;
 
@@ -306,6 +308,8 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 			this.types = new ArrayList<T>();
 		}
 		for (final T t : this.types) {
+			if(t.getQName()==null)
+				continue;
 			if (t.getQName().equals(type)) {
 				res = t;
 				break;
@@ -315,6 +319,8 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 		if ((res == null) && (SchemaFactory.getDefaultSchema() != null)) {
 			for (final Object ob : SchemaFactory.getDefaultSchema().getTypes()) {
 				final AbsItfType t = (AbsItfType) ob;
+				if(t.getQName()==null)
+					continue;
 				if (t.getQName().equals(type)) {
 					res = (T) t;
 					break;
@@ -447,7 +453,6 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 		if(elmt != null) {
 			res.add(elmt);
 		}
-
 		// anonymous element
 		AbsItfComplexType ct = null;
 		for(El elmtA: this.getElements()) {
@@ -491,7 +496,18 @@ public abstract class AbstractSchemaImpl<E, T extends AbsItfType, El extends Abs
 				}
 			}
 		}
-		
+		try{
+			if(ct.getComplexContent() != null && ct.getComplexContent().getRestriction()!=null ) {
+				for(Element elmtItem: (List<Element>)((RestrictionImpl)ct.getComplexContent().getRestriction()).getElements()) {
+					if(elmtItem.getQName().equals(element)) {
+						res.add((El)elmtItem);
+					}
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+			//ignore
+		}
 		if(ct.getComplexContent() != null && ct.getComplexContent().getExtension()!=null && ct.getComplexContent().getExtension().getSequence() != null) {
 			for(El elmtItem: (List<El>)ct.getComplexContent().getExtension().getSequence().getElements()) {
 				if(elmtItem.getQName().equals(element)) {

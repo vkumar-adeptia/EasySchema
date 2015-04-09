@@ -57,9 +57,16 @@ public class ComplexTypeImpl
 	 */
     private static final long serialVersionUID = 1L;
 
+    private AbstractSchemaElementImpl parentElement;
     public ComplexTypeImpl(
             final org.ow2.easywsdl.schema.org.w3._2001.xmlschema.ComplexType model,
             final AbstractSchemaElementImpl parent) {
+    	this(model,parent,null);
+    	
+    }
+    public ComplexTypeImpl(
+            final org.ow2.easywsdl.schema.org.w3._2001.xmlschema.ComplexType model,
+            final AbstractSchemaElementImpl parent,  final AbstractSchemaElementImpl parentElement) {
         super(model, parent);
 
         // get attributes associated to the elements
@@ -74,6 +81,7 @@ public class ComplexTypeImpl
 
         // get the sequence
         if(this.model.getSequence() != null) {
+        	this.setParentElement(parentElement);
         	this.setSequence(new SequenceImpl(this.model.getSequence(), this));
         }
         
@@ -173,6 +181,20 @@ public class ComplexTypeImpl
 				((ElementImpl)elmt).findReferencedElementIfExist();
 			}
 		}
+	}
+
+	/**
+	 * @return the parentElement
+	 */
+	public AbstractSchemaElementImpl getParentElement() {
+		return parentElement;
+	}
+
+	/**
+	 * @param abstractSchemaElementImpl the parentElement to set
+	 */
+	public void setParentElement(AbstractSchemaElementImpl abstractSchemaElementImpl) {
+		this.parentElement = abstractSchemaElementImpl;
 	}
 
 

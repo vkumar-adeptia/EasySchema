@@ -29,6 +29,7 @@ package org.ow2.easywsdl.schema.impl;
 
 import org.ow2.easywsdl.schema.api.ComplexContent;
 import org.ow2.easywsdl.schema.api.Extension;
+import org.ow2.easywsdl.schema.api.Restriction;
 import org.ow2.easywsdl.schema.api.abstractElmt.AbstractComplexContentImpl;
 import org.ow2.easywsdl.schema.api.abstractElmt.AbstractSchemaElementImpl;
 
@@ -37,7 +38,7 @@ import org.ow2.easywsdl.schema.api.abstractElmt.AbstractSchemaElementImpl;
  */
 public class ComplexContentImpl
         extends
-        AbstractComplexContentImpl<org.ow2.easywsdl.schema.org.w3._2001.xmlschema.ComplexContent, Extension>
+        AbstractComplexContentImpl<org.ow2.easywsdl.schema.org.w3._2001.xmlschema.ComplexContent, Extension, Restriction>
         implements ComplexContent {
 
     /**
@@ -55,9 +56,18 @@ public class ComplexContentImpl
         if(this.model.getExtension() != null) {
         	this.extension = new ExtensionImpl(this.model.getExtension(), this);
         }
+        try{
+        	if(this.model.getRestriction() != null) {
+        		this.restriction = new RestrictionImpl(null,this.model.getRestriction(), this);
+        	}
+        }catch(Exception e){
+        	e.printStackTrace();
+        	//ignore
+        }
         
     }
 
+    
 	@Override
 	public void setExtension(Extension extension) {
 		super.setExtension(extension);
