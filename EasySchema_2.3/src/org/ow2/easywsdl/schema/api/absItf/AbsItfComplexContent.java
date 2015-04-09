@@ -32,11 +32,15 @@ import org.ow2.easywsdl.schema.api.SchemaElement;
 /**
  * @author Nicolas Salatge - eBM WebSourcing
  */
-public interface AbsItfComplexContent<E extends AbsItfExtension> extends SchemaElement {
+public interface AbsItfComplexContent<E extends AbsItfExtension, R extends AbsItfRestriction> extends SchemaElement {
 
     E getExtension();
 
     void setExtension(E extension);
+
+    R getRestriction();
+
+    void setRestriction(R restriction);
 
     E createExtension();
 }
